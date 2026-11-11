@@ -12,7 +12,8 @@ One section per question. Short.
 - `defer`: downloads in parallel, runs **after parsing ends** (before `DOMContentLoaded`), **in written order**.
   - DOM ready + order kept → the safe default for app code.
 - `type="module"` scripts are deferred by default.
-- `async`/`defer` on an inline script (no `src`) do nothing.
+- `async`/`defer` on an inline script (no `src`) are **silently ignored** → it runs right away → DOM access crashes, no warning.
+  - Fix: inline `type="module"` (inline modules *are* deferred), or `DOMContentLoaded`, or put it at the end of `<body>`.
 
 | | Blocks parsing? | Runs when | Order kept? |
 |---|---|---|---|
