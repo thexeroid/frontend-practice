@@ -37,3 +37,15 @@ One section per question. Short.
   - The preload scanner (reads ahead while parsing is blocked) narrows the gap, but `defer` in `<head>` is the guaranteed way.
 - One main thread per tab runs JS + builds DOM/CSSOM + style + layout. Block it → the page freezes. Network, raster, compositing run elsewhere.
 - Check: DevTools → Performance (the "Main" row) · Network → Priority column · Lighthouse → "render-blocking resources".
+
+## Resource hints: preload vs prefetch
+
+- **Preload scanner** (built-in, automatic): while a plain script blocks parsing, a light reader skims ahead in the HTML and starts downloading later `<link>`/`<script src>`/`<img>`. Downloads only.
+- `<link rel="preload" href="font.woff2" as="font" crossorigin>` (written by me): starts downloading a file **hidden inside CSS/JS** (fonts, JS-loaded images) from the HTML. Downloaded **once**, waits in cache until the CSS/JS asks for it.
+  - Preload doesn't make things non-blocking. It makes them **start sooner**.
+- `rel` = **why** you link. Fixed vocabulary from the HTML spec (check MDN). Wrong or unknown value → **silently ignored**. `<link>` uses `href`, not `src`.
+  - `stylesheet` on a font → read as CSS, fails, wasted. `preconnect` → only opens a connection.
+- **preload** = sure + soon, **this** page, high priority. **prefetch** = probably, later (the **next** page, e.g. `/cart` → `/checkout`), low priority, only when idle.
+- Background = doesn't block. **Priority = who gets the network pipe first.** A high-priority prefetch would steal bandwidth from the current page.
+- Prefetched files land in the cache (usable by the current page), but low priority → may arrive too late. Wrong tool for now-needs.
+- HTML fails silently → verify in DevTools → Network (did it load, when, what priority).
